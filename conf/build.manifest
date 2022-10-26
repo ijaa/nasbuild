@@ -260,27 +260,7 @@ sources:
   branch: NAS-117105
   batch_priority: 0
   predepscmd:
-    - "apt install -y flex bison dwarves libssl-dev"
-    # We remove git files because kernel makefile tries to interact with git for determining version
-    # which results in misconfigured version due to our debian based changes
-    - "rm -rf .git .gitattributes .gitignore"
-    - "sed  -i 's/^EXTRAVERSION.*/EXTRAVERSION = -debug/'  Makefile"
-    - "make defconfig"
-    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debian_amd64.config"
-    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/truenas.config"
-    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debug.config"
-    - "make syncconfig"
-    - "make archprepare"
-    - "./scripts/package/mkdebian"
-  buildcmd:
-    - "rm -rf .config.old"
-    - "make -j$(nproc) bindeb-pkg"
-- name: kernel-production
-  repo: https://github.com/truenas/linux
-  branch: NAS-117105
-  batch_priority: 0
-  predepscmd:
-    - "apt install -y flex bison dwarves libssl-dev"
+    - "apt install -y flex bison dwarves libssl-dev devscripts"
     # We remove git files because kernel makefile tries to interact with git for determining version
     # which results in misconfigured version due to our debian based changes
     - "rm -rf .git .gitattributes .gitignore"
@@ -295,6 +275,26 @@ sources:
   buildcmd:
     - "rm -rf .config.old"
     - "make -j$(nproc) bindeb-pkg"
+- name: kernel-dbg
+  repo: https://github.com/truenas/linux
+  branch: NAS-117105
+  batch_priority: 0
+  predepscmd:
+    - "apt install -y flex bison dwarves libssl-dev devscripts"
+    # We remove git files because kernel makefile tries to interact with git for determining version
+    # which results in misconfigured version due to our debian based changes
+    - "rm -rf .git .gitattributes .gitignore"
+    - "sed  -i 's/^EXTRAVERSION.*/EXTRAVERSION = -debug/'  Makefile"
+    - "make defconfig"
+    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debian_amd64.config"
+    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/truenas.config"
+    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debug.config"
+    - "make syncconfig"
+    - "make archprepare"
+    - "./scripts/package/mkdebian"
+  buildcmd:
+    - "rm -rf .config.old"
+    - "make -j$(nproc) bindeb-pkg"
 - name: nfs4xdr_acl_tools
   repo: https://github.com/truenas/nfs4xdr-acl-tools
   branch: master
@@ -303,7 +303,27 @@ sources:
   batch_priority: 0
   branch: truenas/zfs-2.1-release
   env:
-    KVERS: "$(shell apt info linux-headers-truenas-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
+    KVERS: "$(shell apt info linux-headers-truenas-production-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
+    KSRC: "/usr/src/linux-headers-$(KVERS)"
+    KOBJ: "$(KSRC)"
+  predepscmd:
+    - "cp -r contrib/debian debian"
+  deps_path: contrib/debian
+  prebuildcmd:
+    - "sed 's/@CFGOPTS@//g' debian/rules.in > debian/rules"
+    - "chmod +x debian/rules"
+  buildcmd:
+    - "sh autogen.sh"
+    - "./scripts/make_gitrev.sh"
+    - "debian/rules override_dh_binary-modules"
+  kernel_module: true
+  generate_version: false
+- name: openzfs-dbg
+  repo: https://github.com/truenas/zfs
+  batch_priority: 0
+  branch: truenas/zfs-2.1-release
+  env:
+    KVERS: "$(shell apt info linux-headers-truenas-debug-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
     KSRC: "/usr/src/linux-headers-$(KVERS)"
     KOBJ: "$(KSRC)"
   predepscmd:
@@ -347,7 +367,7 @@ sources:
   repo: https://github.com/truenas/scst
   generate_version: false
   env:
-    KVER: "$(shell apt info linux-headers-truenas-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
+    KVER: "$(shell apt info linux-headers-truenas-production-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
     KDIR: "/lib/modules/$(KVER)/build"
   prebuildcmd:
     - "sed -i s/^DEBIAN_REVISION=.*/DEBIAN_REVISION=~truenas+1/g Makefile"
@@ -358,6 +378,22 @@ sources:
     - "make dpkg DEBEMAIL=no-reply@ixsystems.com DEBFULLNAME=TrueNAS"
   kernel_module: true
   branch: truenas-3.7.x
+  explicit_deps:
+    - openzfs
+- name: scst-dbg
+  repo: https://github.com/truenas/scst
+  generate_version: false
+  env:
+    KVER: "$(shell apt info linux-headers-truenas-debug-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
+    KDIR: "/lib/modules/$(KVER)/build"
+  prebuildcmd:
+    - "sed -i s/^DEBIAN_REVISION=.*/DEBIAN_REVISION=~truenasdbg+1/g Makefile"
+    - "make debian/changelog"
+  buildcmd:
+    - "make scst-dist-gzip"
+    - "make dpkg DEBEMAIL=no-reply@ixsystems.com DEBFULLNAME=TrueNAS"
+  kernel_module: true
+  branch: master
   explicit_deps:
     - openzfs
 - name: truenas_binaries
