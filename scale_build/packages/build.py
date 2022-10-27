@@ -68,6 +68,10 @@ class BuildPackageMixin:
             self.run_in_chroot('apt install -y /packages/linux-headers-truenas*')
             self.run_in_chroot('apt install -y /packages/linux-image-truenas*')
 
+        if self.name == 'midcli':
+            self.run_in_chroot('apt install -y /packages/linux-headers-truenas*')
+            self.run_in_chroot('apt install -y /packages/linux-image-truenas*')
+
         for predep_entry in self.predepscmd:
             if isinstance(predep_entry, dict):
                 predep_cmd = predep_entry['command']
