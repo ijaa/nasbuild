@@ -337,6 +337,8 @@ sources:
     - "rm ../openzfs-zfs-dkms*.deb ../openzfs-zfs-dracut*.deb"
     - "debian/rules override_dh_binary-modules"
   kernel_module: true
+  explicit_deps:
+    - kernel-dbg
   generate_version: false
 - name: truenas_samba
   repo: https://github.com/truenas/samba
