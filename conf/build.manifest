@@ -101,6 +101,7 @@ base-packages:
 - truenas
 - wireguard-dkms
 - wireguard-tools
+- openzfs-zfs-modules-production
 - openzfs-zfs-test
 - openzfs-zfs-initramfs
 - nvme-cli
@@ -314,6 +315,7 @@ sources:
   prebuildcmd:
     - "sed 's/@CFGOPTS@//g' debian/rules.in > debian/rules"
     - "chmod +x debian/rules"
+    - "sed  -i 's/Provides: openzfs-zfs-modules/Provides: openzfs-zfs-modules-production/'  debian/control.modules.in"
   buildcmd:
     - "sh autogen.sh"
     - "./scripts/make_gitrev.sh"
