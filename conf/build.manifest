@@ -482,7 +482,7 @@ sources:
   branch: main
 - name: truenas_files
   repo: https://github.com/truenas/middleware
-  branch: master
+  branch: NAS-117105
   subdir: src/freenas
 - name: middlewared
   repo: https://github.com/truenas/middleware
