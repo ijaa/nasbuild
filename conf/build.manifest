@@ -262,12 +262,13 @@ sources:
   repo: https://github.com/truenas/linux
   branch: NAS-117105
   batch_priority: 0
+  env:
+    EXTRAVERSION: "-production"
   predepscmd:
     - "apt install -y flex bison dwarves libssl-dev devscripts"
     # We remove git files because kernel makefile tries to interact with git for determining version
     # which results in misconfigured version due to our debian based changes
     - "rm -rf .git .gitattributes .gitignore"
-    - "sed  -i 's/^EXTRAVERSION.*/EXTRAVERSION = -production/'  Makefile"
     - "make defconfig"
     - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debian_amd64.config"
     - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/truenas.config"
@@ -282,16 +283,17 @@ sources:
   repo: https://github.com/truenas/linux
   branch: NAS-117105
   batch_priority: 0
+  env:
+    EXTRAVERSION: "-debug"
   predepscmd:
     - "apt install -y flex bison dwarves libssl-dev devscripts"
     # We remove git files because kernel makefile tries to interact with git for determining version
     # which results in misconfigured version due to our debian based changes
     - "rm -rf .git .gitattributes .gitignore"
-    - "sed  -i 's/^EXTRAVERSION.*/EXTRAVERSION = -debug/'  Makefile"
     - "make defconfig"
     - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debian_amd64.config"
     - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/truenas.config"
-    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/debug.config"
+    - "./scripts/kconfig/merge_config.sh .config scripts/package/truenas/tn-debug.config"
     - "make syncconfig"
     - "make archprepare"
     - "./scripts/package/mkdebian"
