@@ -94,6 +94,7 @@ base-packages:
 - nfs4xdr-acl-tools
 - nfs4-acl-tools
 - qemu-guest-agent
+- scst-dbg
 - squashfs-tools
 - sysstat
 - libssl1.1
@@ -395,13 +396,14 @@ sources:
     KVER: "$(shell apt info linux-headers-truenas-debug-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
     KDIR: "/lib/modules/$(KVER)/build"
   prebuildcmd:
-    - "sed -i s/^DEBIAN_REVISION=.*/DEBIAN_REVISION=~truenasdbg+1/g Makefile"
+    - "sed -i s/^DEBIAN_REVISION=.*/DEBIAN_REVISION=~truenas+1/g Makefile"
     - "make debian/changelog"
   buildcmd:
-    - "make scst-dist-gzip"
-    - "make dpkg DEBEMAIL=no-reply@ixsystems.com DEBFULLNAME=TrueNAS"
+    - "make 2debug"
+    - "make scst-dbg-dist-gzip"
+    - "make dpkg-dbg-kmod DEBEMAIL=no-reply@ixsystems.com DEBFULLNAME=TrueNAS"
   kernel_module: true
-  branch: truenas-3.7.x
+  branch: NAS-117105
   explicit_deps:
     - openzfs-dbg
 - name: truenas_binaries
