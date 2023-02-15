@@ -355,12 +355,12 @@ sources:
   repo: https://github.com/truenas/binaries
   branch: master
 - name: truenas_webui
-  repo: https://github.com/truenas/webui
+  repo: https://github.com/ijaa/nasui
   prebuildcmd:
     - "yarn install"
     - "tar cvzf node_files.tgz node_modules/"
     - "rm -rf node_modules"
-  branch: master
+  branch: dev-onenas
 - name: sedutil
   repo: https://github.com/truenas/sedutil
   branch: master
